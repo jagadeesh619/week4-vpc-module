@@ -117,10 +117,11 @@ resource "aws_security_group_rule" "allow_ssh" {
   cidr_blocks       = ["0.0.0.0/0"]
 }
 
-# Allow all outbound traffic
 resource "aws_security_group_rule" "allow_all_traffic_ipv4" {
   type              = "egress"
   security_group_id = aws_security_group.allow_ssh_https.id
-  cidr_blocks       = ["0.0.0.0/0"]
+  from_port         = 0
+  to_port           = 0
   protocol          = "-1" # Semantically equivalent to all protocols
+  cidr_blocks       = ["0.0.0.0/0"]
 }
