@@ -38,20 +38,20 @@ resource "aws_subnet" "private" {
   }
 }
 
+# Define an EC2 instance
 resource "aws_instance" "web" {
-  ami           = var.ami_id
-  instance_type = var.instance_type
-  subnet_id     = aws_subnet.public.id
-
+  ami                      = var.ami_id
+  instance_type            = var.instance_type
+  subnet_id                = aws_subnet.public.id
   associate_public_ip_address = true
-
-  vpc_security_group_ids = [aws_security_group.allow_ssh_https.id]
+  vpc_security_group_ids   = [aws_security_group.allow_ssh_https.id]
 
   tags = {
     Name = var.instance_name
   }
 }
 
+# Define a public route table
 resource "aws_route_table" "public_rt" {
   vpc_id = aws_vpc.main.id
 
@@ -65,6 +65,7 @@ resource "aws_route_table" "public_rt" {
   }
 }
 
+# Define a private route table
 resource "aws_route_table" "private_rt" {
   vpc_id = aws_vpc.main.id
 
@@ -73,17 +74,19 @@ resource "aws_route_table" "private_rt" {
   }
 }
 
-
+# Associate public subnet with public route table
 resource "aws_route_table_association" "public" {
   subnet_id      = aws_subnet.public.id
   route_table_id = aws_route_table.public_rt.id
 }
 
+# Associate private subnet with private route table
 resource "aws_route_table_association" "private" {
   subnet_id      = aws_subnet.private.id
   route_table_id = aws_route_table.private_rt.id
 }
 
+# Define a security group
 resource "aws_security_group" "allow_ssh_https" {
   name        = var.sg_name
   description = var.sg_description
@@ -94,30 +97,30 @@ resource "aws_security_group" "allow_ssh_https" {
   }
 }
 
+# Allow HTTPS traffic
 resource "aws_security_group_rule" "allow_https" {
-  type        = "ingress"
+  type              = "ingress"
   security_group_id = aws_security_group.allow_ssh_https.id
-  from_port    = 80
-  to_port      = 80
-  protocol     = "tcp"
-  cidr_blocks  = ["0.0.0.0/0"]
+  from_port         = 80
+  to_port           = 80
+  protocol          = "tcp"
+  cidr_blocks       = ["0.0.0.0/0"]
 }
 
+# Allow SSH traffic
 resource "aws_security_group_rule" "allow_ssh" {
-  type        = "ingress"
+  type              = "ingress"
   security_group_id = aws_security_group.allow_ssh_https.id
-  from_port    = 22
-  to_port      = 22
-  protocol     = "tcp"
-  cidr_blocks  = ["0.0.0.0/0"]
+  from_port         = 22
+  to_port           = 22
+  protocol          = "tcp"
+  cidr_blocks       = ["0.0.0.0/0"]
 }
 
+# Allow all outbound traffic
 resource "aws_security_group_rule" "allow_all_traffic_ipv4" {
   type              = "egress"
   security_group_id = aws_security_group.allow_ssh_https.id
   cidr_blocks       = ["0.0.0.0/0"]
   protocol          = "-1" # Semantically equivalent to all protocols
 }
-
-
-
